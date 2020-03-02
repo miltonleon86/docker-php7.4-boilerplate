@@ -1,0 +1,37 @@
+version: '3.4'
+
+networks:
+  boilerplate:
+    external:
+      name: nginx_proxy_boilerplate
+
+services:
+  boilerplate_phpfpm:
+    image: boilerplate/phpfpm
+    build:
+      context: .
+      target: phpfpm
+      cache_from:
+        - boilerplate/boilerplate
+    networks:
+      - boilerplate
+    env_file:
+      - .env.xdebug
+    volumes:
+      - ./:/srv/api:rw,cached
+
+  boilerplate_nginx:
+    image: boilerplate/nginx
+    build:
+      context: .
+      target: nginx
+      cache_from:
+        - boilerplate/nginx
+    networks:
+      - boilerplate
+    depends_on:
+      - boilerplate_phpfpm
+    volumes:
+      - ./public:/srv/api/public:ro
+    environment:
+      - VIRTUAL_HOST=api.boilerplate.develop
